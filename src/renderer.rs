@@ -776,7 +776,7 @@ fn page_header(
             meta name="viewport" content="width=device-width, initial-scale=1";
             @if is_error {
                 title { (serve_path) }
-            } else {
+            } @else {
                 title { "Index of " (serve_path) }
             }
             style { (css(color_scheme)) }
