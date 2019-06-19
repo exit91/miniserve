@@ -127,7 +127,7 @@ impl Entry {
 
     // Returns whether the entry is an audio file
     pub fn is_audio(&self) -> bool {
-        let audio_extensions = vec!["ogg", "mp3", "aac", "flac", "wav"];
+        let audio_extensions = vec!["ogg", "mp3", "aac", "flac", "wav", "m4a"];
         self.entry_type == EntryType::File && self.extension()
             .map(|ext| audio_extensions.contains(&ext.as_str()))
             .unwrap_or(false)
