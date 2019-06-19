@@ -116,6 +116,26 @@ impl Entry {
     pub fn is_symlink(&self) -> bool {
         self.entry_type == EntryType::Symlink
     }
+
+    // Returns whether the entry is a video
+    pub fn is_video(&self) -> bool {
+        let video_extensions = vec!["mp4", "ogv", "avi", "mkv"];
+        self.entry_type == EntryType::File && self.extension()
+            .map(|ext| video_extensions.contains(&ext.as_str()))
+            .unwrap_or(false)
+    }
+
+    // Returns whether the entry is an audio file
+    pub fn is_audio(&self) -> bool {
+        let audio_extensions = vec!["ogg", "mp3", "aac", "flac", "wav"];
+        self.entry_type == EntryType::File && self.extension()
+            .map(|ext| audio_extensions.contains(&ext.as_str()))
+            .unwrap_or(false)
+    }
+
+    fn extension(&self) -> Option<String> {
+        std::path::PathBuf::from(&self.name).extension().and_then(|s| s.to_str()).map(|s| s.to_string())
+    }
 }
 
 pub fn file_handler(req: &HttpRequest<crate::MiniserveConfig>) -> Result<fs::NamedFile> {

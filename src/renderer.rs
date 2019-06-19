@@ -93,6 +93,19 @@ pub fn page(
                     (arrow_up())
                 }
             }
+            div#audio-overlay {
+                audio#preview-audio controls? {
+                    source#preview-audio-source;
+                }
+                button onclick="showVideo(this)" {
+                    "Show Video"
+                }
+            }
+            div#video-overlay onclick="hideVideo(this)" style="display: none;" {
+                video#preview-video controls? {
+                    source#preview-video-source;
+                }
+            }
         }
     }
 }
@@ -310,6 +323,18 @@ fn entry_row(
                                     (size)
                                 }
                             }
+                            // TODO replace "Play" with play arrow
+                            @if entry.is_video() {
+                                button onclick="playVideo(this)" data-src=(&entry.link) {
+                                    "Play"
+                                }
+
+                            } @else if entry.is_audio() {
+                                button onclick="playAudio(this)" data-src=(&entry.link) {
+                                    "Play"
+                                }
+
+                            } @else {}
                         }
                     } @else if entry.is_symlink() {
                         a.symlink href=(parametrized_link(&entry.link, sort_method, sort_order, color_scheme, default_color_scheme)) {
@@ -656,6 +681,20 @@ fn css(color_scheme: ColorScheme) -> Markup {
     .error-nav {{
         margin-top: 4rem;
     }}
+    #video-overlay {{
+        background-color: #000a;
+        position: sticky;
+        bottom: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }}
+    #audio-overlay {{
+        position: sticky;
+        bottom: 0;
+        display: flex;
+    }}
     @media (max-width: 760px) {{
         nav {{
             padding: 0 2.5rem;
@@ -741,6 +780,42 @@ fn css(color_scheme: ColorScheme) -> Markup {
     (PreEscaped(css))
 }
 
+/// Partial: javascript
+fn js() -> Markup {
+    let js = format!("
+let playAudio = function(el) {{
+    document.getElementById(\"preview-audio-source\").setAttribute(\"src\", el.getAttribute(\"data-src\"));
+    document.getElementById(\"preview-audio\").load();
+    let audio = document.getElementById(\"preview-audio\");
+    audio.load();
+    audio.play();
+}};
+
+let playVideo = function(el) {{
+    let overlay = document.getElementById(\"video-overlay\");
+console.log(overlay);
+    overlay.style.display = '';
+    document.getElementById(\"preview-video-source\").setAttribute(\"src\", el.getAttribute(\"data-src\"));
+    let video = document.getElementById(\"preview-video\");
+    video.load();
+    video.play();
+}};
+
+let hideVideo = function(el) {{
+    let overlay = document.getElementById(\"video-overlay\");
+    overlay.style.display = 'none';
+    let video = document.getElementById(\"preview-video\");
+    video.stop();
+}}
+
+let showVideo = function(el) {{
+    let overlay = document.getElementById(\"video-overlay\");
+    overlay.style.display = '';
+}}
+");
+    (PreEscaped(js))
+}
+
 /// Partial: up arrow
 fn arrow_up() -> Markup {
     (PreEscaped("⇪".to_string()))
@@ -780,6 +855,7 @@ fn page_header(
                 title { "Index of " (serve_path) }
             }
             style { (css(color_scheme)) }
+            script type="text/javascript" { (js()) }
             @if file_upload {
                 (PreEscaped(r#"
                 <script>
